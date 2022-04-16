@@ -1,0 +1,122 @@
+package src;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+public class EAUtils {
+
+    public static ArrayList<Individual> tournamentSelection(ArrayList<Individual> population,
+            ArrayList<Map<Integer, double[]>> paretoFronts, HashMap<Integer, Double> crowdingDistances) {
+        ArrayList<Individual> parents = new ArrayList<Individual>(population.size());
+
+        for (int i = 0; i < ((int) population.size() / 2) * 2; i++) {
+            int cand1Index = (int) (Math.random() * population.size());
+            int cand2Index = (int) (Math.random() * population.size());
+            Individual candidate1 = population.get(cand1Index);
+            Individual candidate2 = population.get(cand2Index);
+            Individual winner;
+
+            if (candidate1.paretoFront == candidate2.paretoFront) {
+                winner = crowdingDistances.get(cand1Index) >= crowdingDistances.get(cand1Index)
+                        ? candidate1
+                        : candidate2;
+            } else {
+                winner = candidate1.paretoFront > candidate2.paretoFront ? candidate2 : candidate2;
+            }
+            parents.add(winner);
+        }
+
+        return parents;
+    }
+
+    public static ArrayList<Individual> survivorSelection(int N, ArrayList<Individual> population,
+            ArrayList<Map<Integer, double[]>> paretoFronts, HashMap<Integer, Double> crowdingDistances) {
+
+        ArrayList<Individual> survivors = new ArrayList<Individual>(N);
+        for (Map<Integer, double[]> paretoFront: paretoFronts){
+            if(survivors.size() + paretoFront.size() <= N){
+                for(Integer key: paretoFront.keySet()){
+                    population.get(key).populationIndex = survivors.size();
+                    survivors.add(population.get(key));
+                }
+            }
+            else {
+                Integer remainingCapacity = N - survivors.size();
+
+                // Get crowding distances for desired front, and sort them
+                HashMap<Integer, Double> subCrowdingDistances = new HashMap<Integer, Double>();
+                for(Integer key: paretoFront.keySet()){
+                    subCrowdingDistances.put(key, crowdingDistances.get(key));
+                }
+                TreeMap<Integer, Double> sortedFront = new TreeMap<Integer, Double>(new ValueComparator(subCrowdingDistances, "Descending"));
+                sortedFront.putAll(subCrowdingDistances);
+
+                for(Integer key: sortedFront.keySet()){
+                    System.out.println(sortedFront.get(key));
+                }
+
+                System.out.println("NEEEEEEEE");
+                
+                for(Integer key: subCrowdingDistances.keySet()){
+                    System.out.println(subCrowdingDistances.get(key));
+                }
+
+                break;
+            }
+        }
+
+        return survivors;
+    }
+
+    public static ArrayList<Individual> createOffspring(ArrayList<Individual> parents, int[][] neighborhood, double pC,
+            double pM) {
+        ArrayList<Individual> offspring = new ArrayList<Individual>(parents.size());
+        // Crossover
+        for (int i = 0; i < parents.size(); i += 2) {
+            Individual parent1 = new Individual();
+            Individual parent2 = new Individual();
+            parent1.pixelDirection = new ArrayList<Integer>(parents.get(i).pixelDirection); // Shallow copy O(n)
+            parent2.pixelDirection = new ArrayList<Integer>(parents.get(i + 1).pixelDirection); // Shallow copy O(n)
+            if (Math.random() < pC) {
+                // Making parent copies that end up as offspring
+                singlePointCrossover(parent1, parent2, offspring);
+            } else {
+                offspring.add(parent1);
+                offspring.add(parent2);
+            }
+        }
+        // Mutation
+        for (int i = 0; i < offspring.size(); i++) {
+            for (int pixelIndex = 0; pixelIndex < offspring.get(i).pixelDirection.size(); pixelIndex++) {
+                if (Math.random() < pM) {
+                    int neighboor = -1;
+                    int direction = 0;
+                    // Lazy dumb solution
+                    while (neighboor == -1) {
+                        direction = (int) (Math.random() * Utils.PixelDirection.values().length - 1);
+                        neighboor = neighborhood[pixelIndex][direction];
+                    }
+                    offspring.get(i).pixelDirection.set(pixelIndex, direction);
+                }
+            }
+        }
+
+        return offspring;
+    }
+
+    public static void singlePointCrossover(Individual parent1, Individual parent2, ArrayList<Individual> offspring) {
+
+        int point = (int) (Math.random() * parent1.pixelDirection.size());
+        ArrayList<Integer> offspring1 = new ArrayList<Integer>(parent1.pixelDirection.subList(0, point));
+        ArrayList<Integer> offspring2 = new ArrayList<Integer>(parent2.pixelDirection.subList(0, point));
+        offspring1.addAll(parent2.pixelDirection.subList(point, parent2.pixelDirection.size()));
+        offspring2.addAll(parent1.pixelDirection.subList(point, parent1.pixelDirection.size()));
+
+        parent1.pixelDirection = offspring1;
+        parent2.pixelDirection = offspring2;
+        offspring.add(parent1);
+        offspring.add(parent2);
+    }
+}
