@@ -16,10 +16,10 @@ import javax.imageio.ImageIO;
 class NSGA2 {
     public static void main(String[] args) {
          // Hyper-parameters
-        int epochs = 2;
+        int epochs = 360000;
         int imageIndex = 0;
-        int populationSize = 10;
-        double pC = 0.4;
+        int populationSize = 50;
+        double pC = 0.1;
         double pM = 0.007;
 
         BufferedImage[] images = Utils.loadImages();
@@ -30,7 +30,9 @@ class NSGA2 {
         ArrayList<Individual> population = Population.generateRandomPopulation(image, populationSize, neighborhood);
 
         for (int epoch = 1; epoch < epochs; epoch++) {
+
             // Calculate information about new population
+            System.out.println("Epoch: " + epoch);
             DisjointUnionSet[] disjointSet = Utils.fillDisjointUnionSet(population, image, neighborhood);
             ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps = Utils.getSegementMaps(disjointSet, image.getWidth() * image.getHeight(), population);
             ArrayList<Map<Integer, double[]>> paretoFronts = Fitness.calculateFitness(population, image, neighborhood, rgbDistance, segmentMaps);
@@ -47,8 +49,22 @@ class NSGA2 {
             paretoFronts = Fitness.calculateFitness(population, image, neighborhood, rgbDistance, segmentMaps);
             crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
+            // Number og segment evalutation
+            Integer min = Integer.MAX_VALUE;
+            for(HashMap<Integer, ArrayList<Integer>> segmentMap : segmentMaps){
+                min = Math.min(min, segmentMap.keySet().size());
+            }
+            System.out.println("Number og segments: " + min);
+
             // Finally, select survivors based on pareto front and crowding distance
             population = EAUtils.survivorSelection(populationSize, population, paretoFronts, crowdingDistances);
         }   
+
+        DisjointUnionSet[] disjointSet = Utils.fillDisjointUnionSet(population, image, neighborhood);
+        ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps = Utils.getSegementMaps(disjointSet, image.getWidth() * image.getHeight(), population);
+        ArrayList<Map<Integer, double[]>> paretoFronts = Fitness.calculateFitness(population, image, neighborhood, rgbDistance, segmentMaps);
+        HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
+
+
     }
 }

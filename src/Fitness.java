@@ -55,10 +55,14 @@ public class Fitness {
         double[] deviationValues = calculateOverallDeviation(population, image, neighborhood, segmentMaps);
 
         HashMap<Integer, double[]> valuesMap = new HashMap<Integer, double[]>();
+        double minValue = Double.MAX_VALUE;
         for (int i = 0; i < edgeValues.length; i++) {
             valuesMap.put(i, new double[] { edgeValues[i], connectivityValues[i], deviationValues[i] });
+            minValue = Math.min(minValue, edgeValues[i] + connectivityValues[i] +  deviationValues[i]);
         }
+        System.out.println("Minimum sum value: " + minValue);
 
+        // TODO This will remove all duplicates, replace with LinkeHashMap sorting described in ValueComparator.java
         Map<Integer, double[]> sortedMap = new TreeMap<Integer, double[]>(new ObjectiveComparator(valuesMap, "Ascending", 2));
         sortedMap.putAll(valuesMap);
         Map<Integer, double[]> paretoFront = new HashMap<Integer, double[]>();
@@ -74,7 +78,6 @@ public class Fitness {
             }
             front ++;
         }
-        System.out.println("Number of pareto fronts: " + paretoFronts.size());
         return paretoFronts;
     }
 

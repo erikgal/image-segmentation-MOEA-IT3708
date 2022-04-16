@@ -1,9 +1,7 @@
 package src;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.lang.*;
 
 public class EAUtils {
 
@@ -35,34 +33,34 @@ public class EAUtils {
             ArrayList<Map<Integer, double[]>> paretoFronts, HashMap<Integer, Double> crowdingDistances) {
 
         ArrayList<Individual> survivors = new ArrayList<Individual>(N);
-        for (Map<Integer, double[]> paretoFront: paretoFronts){
-            if(survivors.size() + paretoFront.size() <= N){
-                for(Integer key: paretoFront.keySet()){
+        for (Map<Integer, double[]> paretoFront : paretoFronts) {
+            if (survivors.size() + paretoFront.size() <= N) {
+                for (Integer key : paretoFront.keySet()) {
                     population.get(key).populationIndex = survivors.size();
                     survivors.add(population.get(key));
                 }
-            }
-            else {
+            } else {
                 Integer remainingCapacity = N - survivors.size();
 
                 // Get crowding distances for desired front, and sort them
                 HashMap<Integer, Double> subCrowdingDistances = new HashMap<Integer, Double>();
-                for(Integer key: paretoFront.keySet()){
+                for (Integer key : paretoFront.keySet()) {
                     subCrowdingDistances.put(key, crowdingDistances.get(key));
                 }
-                TreeMap<Integer, Double> sortedFront = new TreeMap<Integer, Double>(new ValueComparator(subCrowdingDistances, "Descending"));
-                sortedFront.putAll(subCrowdingDistances);
 
-                for(Integer key: sortedFront.keySet()){
-                    System.out.println(sortedFront.get(key));
+                // put data from sorted list to hashmap
+                HashMap<Integer, Double> sortedFront = ValueComparator.sortMap(subCrowdingDistances);
+
+                int i = 0;
+                for (Integer key : sortedFront.keySet()) {
+                    if(i < remainingCapacity){
+                        survivors.add(population.get(key));
+                        i++;
+                    }
+                    else{
+                        break;
+                    }
                 }
-
-                System.out.println("NEEEEEEEE");
-                
-                for(Integer key: subCrowdingDistances.keySet()){
-                    System.out.println(subCrowdingDistances.get(key));
-                }
-
                 break;
             }
         }

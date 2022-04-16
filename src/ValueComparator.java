@@ -1,24 +1,34 @@
 package src;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-class ValueComparator implements Comparator {
-	Map<Integer, Double> map;
-    int sort;
- 
-	public ValueComparator(Map<Integer, Double> map, String sort) {
-		this.map = map;
-        this.sort = sort == "Ascending" ? -1 :  1;
+class ValueComparator {
+
+	public static HashMap<Integer, Double> sortMap(HashMap<Integer, Double> map) {
+		// Create a list from elements of HashMap
+		List<Map.Entry<Integer, Double>> list = new LinkedList<Map.Entry<Integer, Double>>(
+			map.entrySet());
+
+		// Sort the list
+		Collections.sort(list, new Comparator<Map.Entry<Integer, Double>>() {
+			public int compare(Map.Entry<Integer, Double> o1,
+					Map.Entry<Integer, Double> o2) {
+				return -(o1.getValue()).compareTo(o2.getValue());
+			}
+		});
+
+		// put data from sorted list to hashmap
+		HashMap<Integer, Double> sortedFront = new LinkedHashMap<Integer, Double>();
+		for (Map.Entry<Integer, Double> aa : list) {
+			sortedFront.put(aa.getKey(), aa.getValue());
+		}
+		return sortedFront;
 	}
-    
-    // Sorts by overall deviation
-	@Override
-	public int compare(Object keyA, Object keyB) {
-		Comparable valueA = (Comparable) map.get(keyA);
-		Comparable valueB = (Comparable) map.get(keyB);
-		int result = this.sort * valueB.compareTo(valueA);
-		//return result == 0 ? 1 : result; // allows duplicates
-		return result;
-	}
+
 }
