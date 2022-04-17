@@ -27,7 +27,9 @@ class NSGA2 {
         int[][] neighborhood = Population.generateNeighborhoodMatrix(image);
         double[][] rgbDistance = Population.generateEuclideanRGBDistance(image, neighborhood);
 
-        ArrayList<Individual> population = Population.generateRandomPopulation(image, populationSize, neighborhood);
+        // ArrayList<Individual> population = Population.generateRandomPopulation(image, populationSize, neighborhood);
+        ArrayList<Individual> population = Population.generateMSTPopulation(image, populationSize, neighborhood, rgbDistance);
+
 
         for (int epoch = 1; epoch < epochs; epoch++) {
 

@@ -29,6 +29,24 @@ public class Population {
         return population;
     }
 
+    public static ArrayList<Individual> generateMSTPopulation(BufferedImage image, int populationSize,
+            int[][] neighborhood, double[][] rgbDistance) {
+        ArrayList<Individual> population = new ArrayList<Individual>(populationSize);
+       
+        MST mst = new MST(image);
+        mst.designMST(neighborhood, rgbDistance);   
+        
+        for (int i = 0; i < populationSize; i++) {
+            Individual ind = new Individual();
+            ArrayList<Integer> pixelDirection = new ArrayList<Integer>();
+
+            int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));
+
+        }
+
+        return population;
+    }
+
     public static int[] generateNeighborhood(int pixelIndex, BufferedImage image, ArrayList<Integer> omit) {
         int[] neighborhood = new int[8];
         for (int i = 0; i < 8; i++) {
@@ -136,23 +154,23 @@ public class Population {
             int green = (color & 0xff00) >> 8;
             int blue = color & 0xff;
 
-            for (int neighboorIndex = 0; neighboorIndex < 8; neighboorIndex++){
-                if (neighborhood[pixelIndex][neighboorIndex] != -1){
-                    int[] neighboorCoordinate = Utils.pixelIndexToCoordinate(image, neighborhood[pixelIndex][neighboorIndex]);
+            for (int neighboorIndex = 0; neighboorIndex < 8; neighboorIndex++) {
+                if (neighborhood[pixelIndex][neighboorIndex] != -1) {
+                    int[] neighboorCoordinate = Utils.pixelIndexToCoordinate(image,
+                            neighborhood[pixelIndex][neighboorIndex]);
                     int neighboorColor = image.getRGB(neighboorCoordinate[0], neighboorCoordinate[1]);
                     // Components will be in the range of 0..255:
                     int neighboorRed = (neighboorColor & 0xff0000) >> 16;
                     int neighboorGreen = (neighboorColor & 0xff00) >> 8;
                     int neighboorBlue = neighboorColor & 0xff;
-    
-                    double euclideanRGBDistance = Math.sqrt(Math.pow((red-neighboorRed), 2) + Math.pow((green-neighboorGreen), 2) + Math.pow((blue-neighboorBlue), 2));
+
+                    double euclideanRGBDistance = Math.sqrt(Math.pow((red - neighboorRed), 2)
+                            + Math.pow((green - neighboorGreen), 2) + Math.pow((blue - neighboorBlue), 2));
                     euclideanRGBDistances[pixelIndex][neighboorIndex] = euclideanRGBDistance;
-                }
-                else {
+                } else {
                     euclideanRGBDistances[pixelIndex][neighboorIndex] = -1;
                 }
             }
-
 
         }
         return euclideanRGBDistances;
