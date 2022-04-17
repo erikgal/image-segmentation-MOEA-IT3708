@@ -51,7 +51,7 @@ class MST {
     }   
     
     // create designMST() method for constructing and printing the MST. The graphArray[][] is an adjacency matrix that defines the graph for MST.  
-    void designMST(int[][] neighborhood, double[][] rgbDistance)   
+    int[] designMST(int[][] neighborhood, double[][] rgbDistance)   
     {   
         // create array of size total number of vertices, i.e., countOfVertices for storing the MST  
         int mstArray[] = new int[countOfVertices];   
@@ -94,6 +94,7 @@ class MST {
     
         // print the constructed Minimum Spanning Tree   
         showMinimumSpanningTree(mstArray, rgbDistance, neighborhood);   
+        return mstArray;
     }   
     //main() method start  
     // public static void main(String[] args)   
