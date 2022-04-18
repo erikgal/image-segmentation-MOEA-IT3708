@@ -46,7 +46,7 @@ class MST {
                     neighboor = i;
                 }
             }
-            System.out.println(mstArray[j] + " <-> " + j + "\t \t" + rgbDistance[j-1][neighboor]);   
+            System.out.println(mstArray[j] + " <-> " + j + "\t \t" + rgbDistance[j][neighboor]);   
         }
     }   
     
@@ -93,7 +93,7 @@ class MST {
         } 
     
         // print the constructed Minimum Spanning Tree   
-        showMinimumSpanningTree(mstArray, rgbDistance, neighborhood);   
+        // showMinimumSpanningTree(mstArray, rgbDistance, neighborhood);   
         return mstArray;
     }   
     //main() method start  

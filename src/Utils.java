@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +47,13 @@ public class Utils {
             DisjointUnionSet disjointSet = new DisjointUnionSet(image.getWidth() * image.getHeight());
             int pixelIndex = 0;
             for (Integer direction : ind.pixelDirection) {
-                disjointSet.union(pixelIndex, neighborhood[pixelIndex][direction]);
-                pixelIndex++;
+                if(direction != -1){
+                    int childPixel = neighborhood[pixelIndex][direction];
+                    if(childPixel != -1){
+                        disjointSet.union(pixelIndex, childPixel);
+                        pixelIndex++;
+                    }
+                }
             }
             disjointSets[indIndex] = disjointSet;
             indIndex++;
@@ -87,10 +93,10 @@ public class Utils {
         return new int[] { x, y };
     }
 
-    public static Map<Integer, double[]> kungsParetoAlgorithm(Map<Integer, double[]> P) {
+    public static LinkedHashMap<Integer, double[]> kungsParetoAlgorithm(Map<Integer, double[]> P) {
         if (P.size() == 1) {
             // If front only has 1 element, don't return a TreeMap, causes later issues
-            HashMap<Integer, double[]> M = new HashMap<Integer, double[]>();
+            LinkedHashMap<Integer, double[]> M = new LinkedHashMap<Integer, double[]>();
             Integer key = P.keySet().iterator().next();
             M.put(key, P.get(key));
             return M;
@@ -111,7 +117,7 @@ public class Utils {
         Map<Integer, double[]> T = kungsParetoAlgorithm(tInput);
         Map<Integer, double[]> B = kungsParetoAlgorithm(bInput);
 
-        HashMap<Integer, double[]> M = new HashMap<Integer, double[]>();
+        LinkedHashMap<Integer, double[]> M = new LinkedHashMap<Integer, double[]>();
 
         for (Integer keyB : B.keySet()) {
             double[] possibleSolution = B.get(keyB);

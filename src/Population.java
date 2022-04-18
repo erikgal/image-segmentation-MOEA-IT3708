@@ -2,6 +2,8 @@ package src;
 
 import java.util.ArrayList;
 
+import src.Utils.PixelDirection;
+
 import java.awt.image.BufferedImage;
 
 public class Population {
@@ -34,14 +36,29 @@ public class Population {
         ArrayList<Individual> population = new ArrayList<Individual>(populationSize);
        
         MST mst = new MST(image);
-        mst.designMST(neighborhood, rgbDistance);   
+        int[] mstArray = mst.designMST(neighborhood, rgbDistance);   
         
         for (int i = 0; i < populationSize; i++) {
             Individual ind = new Individual();
-            ArrayList<Integer> pixelDirection = new ArrayList<Integer>();
+            ArrayList<Integer> pixelDirections = new ArrayList<Integer>();
 
             int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));
+            // TODO implement random directions base on random startPixel 
+            for (int j = 0; j < mstArray.length; j++) {
+                int pixelDirection = -1;
+                for (int neighbor = 0; neighbor < 8; neighbor++) {
+                    int a = neighborhood[j][neighbor];
+                    int b =  mstArray[j];
+                    if(neighborhood[j][neighbor] != -1 && neighborhood[j][neighbor] == mstArray[j]){
+                        pixelDirection = neighbor;
+                        break;
+                    }
+                }
+                pixelDirections.add(pixelDirection);
+            }
 
+            ind.pixelDirection = pixelDirections;
+            population.add(ind);
         }
 
         return population;

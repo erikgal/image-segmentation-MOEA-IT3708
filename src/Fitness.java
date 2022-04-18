@@ -4,8 +4,10 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 
 public class Fitness {
@@ -14,14 +16,20 @@ public class Fitness {
         HashMap<Integer, Double> crowdingDistance = new HashMap<Integer, Double>();
         for (int front = 0; front < paretoFronts.size(); front++) {
             for (int M = 0; M < 3; M++) {
-                Map<Integer, double[]> paretoFront = paretoFronts.get(front);
-                TreeMap<Integer, double[]> sortedFront = new TreeMap<Integer, double[]>(new ObjectiveComparator(paretoFront, "Descending", M));
-                sortedFront.putAll(paretoFront);
+                HashMap<Integer, double[]> paretoFront = (HashMap<Integer, double[]>) paretoFronts.get(front);
+                // TreeMap<Integer, double[]> sortedFront = new TreeMap<Integer, double[]>(new ObjectiveComparator(paretoFront, "Descending", M));
+                // sortedFront.putAll(paretoFront);
+                LinkedHashMap<Integer, double[]> sortedFront = ParetoComparator.sortMap(paretoFront, "Descending", M);
 
-                crowdingDistance.put(sortedFront.firstKey(), Double.MAX_VALUE); // TODO Double check this!
-                crowdingDistance.put(sortedFront.lastKey(), Double.MAX_VALUE);  // TODO Double check this!
-                double fMax = sortedFront.get(sortedFront.firstKey())[M];
-                double fMin = sortedFront.get(sortedFront.lastKey())[M];
+                Iterator<Entry<Integer, double[]>> iterator = sortedFront.entrySet().iterator();
+                Integer firstKey = iterator.next().getKey();
+                Integer lastKey = firstKey;
+                while (iterator.hasNext()) { lastKey = iterator.next().getKey(); }
+
+                crowdingDistance.put(firstKey, Double.MAX_VALUE); // TODO Double check this!
+                crowdingDistance.put(lastKey, Double.MAX_VALUE);  // TODO Double check this!
+                double fMax = sortedFront.get(firstKey)[M];
+                double fMin = sortedFront.get(lastKey)[M];
 
                 Iterator<Integer> keyIterator = sortedFront.keySet().iterator();
                 Integer prevKey = keyIterator.next();
@@ -62,9 +70,10 @@ public class Fitness {
         }
         System.out.println("Minimum sum value: " + minValue);
 
-        // TODO This will remove all duplicates, replace with LinkeHashMap sorting described in ValueComparator.java
-        Map<Integer, double[]> sortedMap = new TreeMap<Integer, double[]>(new ObjectiveComparator(valuesMap, "Ascending", 2));
-        sortedMap.putAll(valuesMap);
+        // Map<Integer, double[]> sortedMap = new TreeMap<Integer, double[]>(new ObjectiveComparator(valuesMap, "Ascending", 2));
+        // sortedMap.putAll(valuesMap);
+        LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap,  "Ascending", 2);
+
         Map<Integer, double[]> paretoFront = new HashMap<Integer, double[]>();
         ArrayList<Map<Integer, double[]>> paretoFronts = new ArrayList<Map<Integer, double[]>>();
 
