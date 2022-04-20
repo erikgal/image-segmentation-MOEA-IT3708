@@ -51,8 +51,7 @@ class MST {
     }   
     
     // create designMST() method for constructing and printing the MST. The graphArray[][] is an adjacency matrix that defines the graph for MST.  
-    int[] designMST(int[][] neighborhood, double[][] rgbDistance)   
-    {   
+    int[] designMST(int[][] neighborhood, double[][] rgbDistance, int startPixel)  {   
         // create array of size total number of vertices, i.e., countOfVertices for storing the MST  
         int mstArray[] = new int[countOfVertices];   
     
@@ -69,8 +68,8 @@ class MST {
         }   
     
         // set value 0 to the 1st vertex because first vertes always include in MST.   
-        keys[0] = 0; // it select as first vertex   
-        mstArray[0] = -1; // set first value of mstArray to -1 to make it root of MST   
+        keys[startPixel] = 0; // it select as first vertex   
+        mstArray[startPixel] = -1; // set first value of mstArray to -1 to make it root of MST   
     
         // The vertices in the MST will be equal to the countOfVertices   
         for (int i = 0; i < countOfVertices - 1; i++) {   
