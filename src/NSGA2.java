@@ -15,20 +15,17 @@ import javax.imageio.ImageIO;
 class NSGA2 {
         public static void main(String[] args) {
                 // Hyper-parameters
-                int epochs = 300;
+                int epochs = 50;
                 int imageIndex = 0;
-                int populationSize = 80;
+                int populationSize = 5;
                 double pC = 0.2;
-                double pM = 0.007;
-                int nbrImageOutputs = 20;
+                double pM = 0.0007;
 
                 BufferedImage[] images = Utils.loadImages();
                 BufferedImage image = images[imageIndex];
                 int[][] neighborhood = Population.generateNeighborhoodMatrix(image);
                 double[][] rgbDistance = Population.generateEuclideanRGBDistance(image, neighborhood);
 
-                // ArrayList<Individual> population = Population.generateRandomPopulation(image,
-                // populationSize, neighborhood);
                 ArrayList<Individual> population = Population.generateMSTPopulation(image, populationSize, neighborhood,
                                 rgbDistance);
 

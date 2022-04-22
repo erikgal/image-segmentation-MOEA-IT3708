@@ -37,7 +37,7 @@ def comparePics(studentPic, optimalSegmentPic):
 	global pixelRangeCheck
 
 	height, width = studentPic.shape
-
+	
 	counter = 0 #counts the number of similar pics
 	numberOfBlackPixels = 0
 	for w in range(width):

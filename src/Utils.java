@@ -84,8 +84,8 @@ public class Utils {
                 tempList.add(pixelIndex);
                 segmentMap.put(key, tempList);
             }
-            segmentMaps.add(segmentMap);
             individual.segmentIds = segmentIds;
+            segmentMaps.add(segmentMap);
         }
         return segmentMaps;
     }
@@ -160,7 +160,7 @@ public class Utils {
         }
     }
 
-    public static ArrayList<Integer> primMST(int[][] neighborhood, double[][] rgbDistance, int startPixel) {
+    public static ArrayList<Integer> primMST(int[][] neighborhood, double[][] rgbDistance, int startPixel, HashMap<Integer, Double> worstEdges) {
         int N = neighborhood.length;
         ArrayList<Integer> pixelDirections = new ArrayList<Integer>(N);
         int[] oppositeNeighborhood = new int[] { 1, 0, 3, 2, 7, 6, 5, 4 };
@@ -192,6 +192,7 @@ public class Utils {
                                                                                // directio
 
                 Utils.addNewEdge(newPixel, edgeQueue, neighborhood, rgbDistance, isPixelVisited);
+                worstEdges.put(newPixel, distance);
             }
         }
 
@@ -237,7 +238,7 @@ public class Utils {
     public static void saveImage(BufferedImage[] bufferedImages) {
         for (int i = 0; i < bufferedImages.length; i++) {
             try {
-                File outputFile = new File("./Images/image" + i + ".png");
+                File outputFile = new File("./src/evaluator/Student_Segmentation_Files/image" + i + ".png");
                 outputFile.getParentFile().mkdirs();
                 ImageIO.write(bufferedImages[i], "png", outputFile);
             } catch (IOException e) {

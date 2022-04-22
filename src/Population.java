@@ -1,6 +1,8 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import src.Utils.PixelDirection;
 
@@ -34,44 +36,24 @@ public class Population {
     public static ArrayList<Individual> generateMSTPopulation(BufferedImage image, int populationSize,
             int[][] neighborhood, double[][] rgbDistance) {
         ArrayList<Individual> population = new ArrayList<Individual>(populationSize);
-
+        
+        int M = 20;
         for (int i = 0; i < populationSize; i++) {
             int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));
-            ArrayList<Integer> pixelDirections = Utils.primMST(neighborhood, rgbDistance, startPixel);
+            HashMap<Integer, Double> worstEdges =  new HashMap<Integer, Double>();
+            ArrayList<Integer> pixelDirections = Utils.primMST(neighborhood, rgbDistance, startPixel, worstEdges);
+
+            worstEdges = EdgeComparator.sortMap(worstEdges);
+            Iterator keyIterator = worstEdges.keySet().iterator();
+            for (int j = 0; j < M; j++) {
+               pixelDirections.set(((Integer) keyIterator.next()), -1);
+            }
             Individual ind = new Individual();
             ind.pixelDirection = pixelDirections;
             population.add(ind);
         }
 
         return population;
-
-        // MST mst = new MST(image);
-        // int[] mstArray = mst.designMST(neighborhood, rgbDistance, 1337);   
-
-        
-        // for (int i = 0; i < populationSize; i++) {
-        //     System.out.println(i);
-        //     Individual ind = new Individual();
-        //     pixelDirections = new ArrayList<Integer>();
-        //     int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));
-
-        //     // TODO implement random directions base on random startPixel 
-        //     for (int j = 0; j < mstArray.length; j++) {
-        //         int pixelDirection = -1;
-        //         for (int neighbor = 0; neighbor < 8; neighbor++) {
-        //             int a = neighborhood[j][neighbor];
-        //             int b =  mstArray[j];
-        //             if(neighborhood[j][neighbor] != -1 && neighborhood[j][neighbor] == mstArray[j]){
-        //                 pixelDirection = neighbor;
-        //                 break;
-        //             }
-        //         }
-        //         pixelDirections.add(pixelDirection);
-        //     }
-
-        //     ind.pixelDirection = pixelDirections;
-        //     population.add(ind);
-        // }
 
     }
 

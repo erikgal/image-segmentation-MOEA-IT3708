@@ -70,8 +70,6 @@ public class Fitness {
         }
         System.out.println("Minimum sum value: " + minValue);
 
-        // Map<Integer, double[]> sortedMap = new TreeMap<Integer, double[]>(new ObjectiveComparator(valuesMap, "Ascending", 2));
-        // sortedMap.putAll(valuesMap);
         LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap,  "Ascending", 2);
 
         Map<Integer, double[]> paretoFront = new HashMap<Integer, double[]>();
