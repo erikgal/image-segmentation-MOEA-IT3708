@@ -267,10 +267,15 @@ public class Utils {
         return bufferedImages;
     }
 
-    public static void saveImage(ArrayList<BufferedImage> bufferedImages) {
+    public static void saveImage(ArrayList<BufferedImage> bufferedImages, boolean earlyStopping) {
         for (int i = 0; i < bufferedImages.size(); i++) {
             try {
-                File outputFile = new File("./src/evaluator/Student_Segmentation_Files/image" + i + ".png");
+                File outputFile;
+                if (earlyStopping){
+                    outputFile = new File("./src/images/Student_Segmentation_Files/image" + i + ".png");
+                }else{
+                    outputFile = new File("./src/evaluator/Student_Segmentation_Files/image" + i + ".png");
+                }
                 outputFile.getParentFile().mkdirs();
                 ImageIO.write(bufferedImages.get(i), "png", outputFile);
             } catch (IOException e) {
@@ -286,7 +291,7 @@ public class Utils {
         ArrayList<Double> scores = new ArrayList<Double>();
 
         try {
-                Process p = Runtime.getRuntime().exec("python3 " + f.getAbsolutePath() + "/evaluator/run.py");
+                Process p = Runtime.getRuntime().exec("python3 " + f.getAbsolutePath() + "/evaluator/run.py earlyStopping");
 
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 

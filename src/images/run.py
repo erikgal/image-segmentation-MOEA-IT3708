@@ -4,10 +4,11 @@ from fileReader import readImage
 from fileReader import readTextFile
 import re
 
-if len(sys.argv) < 2:
+if sys.argv[0] != "earlyStopping":
 	path = os.path.dirname(os.path.abspath(__file__).replace("evaluator", "evaluator"))
+
 else:
-	path = os.path.dirname(os.path.abspath(__file__).replace("evaluator", "images")) 
+	path = os.path.dirname(os.path.abspath(__file__).replace("evaluator", "src")) + "/images"
 
 optimalFolder = path + "/Optimal_Segmentation_Files"  # you may have to specify the complete path
 studentFolder = path + "/Student_Segmentation_Files" # you may have to specify the complete path

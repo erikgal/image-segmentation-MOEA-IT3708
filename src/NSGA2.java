@@ -16,14 +16,15 @@ import java.io.*;
 class NSGA2 {
         public static void main(String[] args) {
                 // Hyper-parameters
-                int epochs = 30;
+                int epochs = 300;
                 int imageIndex = 0;
-                int populationSize = 10;
+                int populationSize = 30;
                 double pC = 0.1;
                 double pM = 0.0007;
                 int minSegments = 4;
                 int maxSegments = 41;
                 boolean checkEarlyStopping = true;
+                int earlyStopRound = 4;
                 double threshold = 75.00;
 
                 BufferedImage[] images = Utils.loadImages();
@@ -34,10 +35,10 @@ class NSGA2 {
                 ArrayList<Individual> population = Population.generateMSTPopulation(image, populationSize, neighborhood,
                                 rgbDistance);
 
-                for (int epoch = 1; epoch < epochs; epoch++) {
+                for (int epoch = 0; epoch < epochs; epoch++) {
 
                         // Calculate information about new population
-                        System.out.println("Epoch: " + epoch);
+                        System.out.println("Epoch: " + (epoch+1));
                         DisjointUnionSet[] disjointSet = Utils.fillDisjointUnionSet(population, image, neighborhood);
                         ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps = Utils.getSegementMaps(disjointSet,
                                         image.getWidth() * image.getHeight(), population);
@@ -46,30 +47,27 @@ class NSGA2 {
                                         rgbDistance, segmentMaps);
                         HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
-                        if (checkEarlyStopping) {
+                        if (checkEarlyStopping && epoch % earlyStopRound == 0) {
                                 boolean[] isFeasible = Utils.filterResults(population, disjointSet, segmentMaps,
                                                 paretoFronts, neighborhood, minSegments, maxSegments);
                                 ArrayList<BufferedImage> outputImages = Utils.createImage(image, population,
                                                 disjointSet, segmentMaps, paretoFronts, neighborhood, isFeasible);
-                                Utils.saveImage(outputImages);
+                                Utils.saveImage(outputImages, new Boolean(true));
+
                                 ArrayList<Double> scores = Utils.earlyStopping();
                                 double max = Double.MIN_VALUE;
                                 for (int i = 0; i < scores.size(); i++) {
                                         max = Math.max(max, scores.get(i));
                                         if(scores.get(i) >= threshold){
                                                 System.out.println("Found solution with " + scores.get(i) + "%");
+                                                ArrayList<BufferedImage> bestImage = new ArrayList<BufferedImage>();
+                                                bestImage.add(outputImages.get(i));
+                                                Utils.saveImage(bestImage, new Boolean(false));
                                                 System.exit(0);
                                         }
                                 }
                                 System.out.println("Best Score this generation: " + max);
                         }
-
-                        // Number og segment evalutation
-                        double sum = 0.0;
-                        for (HashMap<Integer, ArrayList<Integer>> segmentMap : segmentMaps) {
-                                sum += segmentMap.keySet().size();
-                        }
-                        System.out.println("Average number og segments: " + sum / segmentMaps.size());
 
                         // Find Parents and offspring (P & Q)
                         ArrayList<Individual> parents = EAUtils.tournamentSelection(population, paretoFronts,
@@ -102,6 +100,6 @@ class NSGA2 {
                                 neighborhood, minSegments, maxSegments);
                 ArrayList<BufferedImage> outputImages = Utils.createImage(image, population, disjointSet, segmentMaps,
                                 paretoFronts, neighborhood, isFeasible);
-                Utils.saveImage(outputImages);
+                Utils.saveImage(outputImages, new Boolean(false));
         }
 }

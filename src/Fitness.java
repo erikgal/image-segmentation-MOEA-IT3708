@@ -68,7 +68,7 @@ public class Fitness {
             valuesMap.put(i, new double[] { edgeValues[i], connectivityValues[i], deviationValues[i] });
             minValue = Math.min(minValue, edgeValues[i] + connectivityValues[i] +  deviationValues[i]);
         }
-        System.out.println("Minimum sum value: " + minValue);
+        //System.out.println("Minimum sum value: " + minValue);
 
         LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap,  "Ascending", 2);
 
