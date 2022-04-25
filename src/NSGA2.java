@@ -11,15 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import java.io.*;
 
 class NSGA2 {
         public static void main(String[] args) {
                 // Hyper-parameters
-                int epochs = 50;
+                int epochs = 30;
                 int imageIndex = 0;
-                int populationSize = 5;
-                double pC = 0.2;
+                int populationSize = 10;
+                double pC = 0.1;
                 double pM = 0.0007;
+                int minSegments = 4;
+                int maxSegments = 41;
+                boolean checkEarlyStopping = true;
+                double threshold = 75.00;
 
                 BufferedImage[] images = Utils.loadImages();
                 BufferedImage image = images[imageIndex];
@@ -41,12 +46,30 @@ class NSGA2 {
                                         rgbDistance, segmentMaps);
                         HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
-                        // Number og segment evalutation
-                        Integer min = Integer.MAX_VALUE;
-                        for (HashMap<Integer, ArrayList<Integer>> segmentMap : segmentMaps) {
-                                min = Math.min(min, segmentMap.keySet().size());
+                        if (checkEarlyStopping) {
+                                boolean[] isFeasible = Utils.filterResults(population, disjointSet, segmentMaps,
+                                                paretoFronts, neighborhood, minSegments, maxSegments);
+                                ArrayList<BufferedImage> outputImages = Utils.createImage(image, population,
+                                                disjointSet, segmentMaps, paretoFronts, neighborhood, isFeasible);
+                                Utils.saveImage(outputImages);
+                                ArrayList<Double> scores = Utils.earlyStopping();
+                                double max = Double.MIN_VALUE;
+                                for (int i = 0; i < scores.size(); i++) {
+                                        max = Math.max(max, scores.get(i));
+                                        if(scores.get(i) >= threshold){
+                                                System.out.println("Found solution with " + scores.get(i) + "%");
+                                                System.exit(0);
+                                        }
+                                }
+                                System.out.println("Best Score this generation: " + max);
                         }
-                        System.out.println("Number og segments: " + min);
+
+                        // Number og segment evalutation
+                        double sum = 0.0;
+                        for (HashMap<Integer, ArrayList<Integer>> segmentMap : segmentMaps) {
+                                sum += segmentMap.keySet().size();
+                        }
+                        System.out.println("Average number og segments: " + sum / segmentMaps.size());
 
                         // Find Parents and offspring (P & Q)
                         ArrayList<Individual> parents = EAUtils.tournamentSelection(population, paretoFronts,
@@ -75,7 +98,10 @@ class NSGA2 {
                                 rgbDistance, segmentMaps);
                 HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
-                BufferedImage[] outputImages = Utils.createImage(image, population, disjointSet, segmentMaps, paretoFronts, neighborhood);
+                boolean[] isFeasible = Utils.filterResults(population, disjointSet, segmentMaps, paretoFronts,
+                                neighborhood, minSegments, maxSegments);
+                ArrayList<BufferedImage> outputImages = Utils.createImage(image, population, disjointSet, segmentMaps,
+                                paretoFronts, neighborhood, isFeasible);
                 Utils.saveImage(outputImages);
         }
 }

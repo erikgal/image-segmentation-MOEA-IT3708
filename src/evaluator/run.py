@@ -7,7 +7,7 @@ path = os.path.dirname(os.path.abspath(__file__).replace("evaluator", "evaluator
 
 optimalFolder = path + "/Optimal_Segmentation_Files"  # you may have to specify the complete path
 studentFolder = path + "/Student_Segmentation_Files" # you may have to specify the complete path
-colorValueSlackRange = 40
+colorValueSlackRange = 5
 blackValueThreshold = 100 # colors below 100 is black
 pixelRangeCheck = 4
 checkEightSurroundingPixels = True

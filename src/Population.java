@@ -37,17 +37,29 @@ public class Population {
             int[][] neighborhood, double[][] rgbDistance) {
         ArrayList<Individual> population = new ArrayList<Individual>(populationSize);
         
-        int M = 20;
+        int M = 2; // Number segmentations
+        int N = 2000; // Choose M random segmentations for N
         for (int i = 0; i < populationSize; i++) {
             int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));
             HashMap<Integer, Double> worstEdges =  new HashMap<Integer, Double>();
             ArrayList<Integer> pixelDirections = Utils.primMST(neighborhood, rgbDistance, startPixel, worstEdges);
 
             worstEdges = EdgeComparator.sortMap(worstEdges);
-            Iterator keyIterator = worstEdges.keySet().iterator();
-            for (int j = 0; j < M; j++) {
-               pixelDirections.set(((Integer) keyIterator.next()), -1);
+            if (N < M){
+                Iterator keyIterator = worstEdges.keySet().iterator();
+                for (int j = 0; j < M; j++) {
+                    pixelDirections.set(((Integer) keyIterator.next()), -1);
+                 }
             }
+            else {
+                Object[] worstEdgeKeys = worstEdges.keySet().toArray();
+                for (int j = 0; j < M; j++) {
+                    int index = (int) (Math.random() * N);
+                    Integer key = (Integer) worstEdgeKeys[index];
+                    pixelDirections.set(key, -1);
+                 }
+            }
+
             Individual ind = new Individual();
             ind.pixelDirection = pixelDirections;
             population.add(ind);

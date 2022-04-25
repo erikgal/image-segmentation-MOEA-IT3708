@@ -1,13 +1,13 @@
 package src;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.Paint;
@@ -160,7 +161,8 @@ public class Utils {
         }
     }
 
-    public static ArrayList<Integer> primMST(int[][] neighborhood, double[][] rgbDistance, int startPixel, HashMap<Integer, Double> worstEdges) {
+    public static ArrayList<Integer> primMST(int[][] neighborhood, double[][] rgbDistance, int startPixel,
+            HashMap<Integer, Double> worstEdges) {
         int N = neighborhood.length;
         ArrayList<Integer> pixelDirections = new ArrayList<Integer>(N);
         int[] oppositeNeighborhood = new int[] { 1, 0, 3, 2, 7, 6, 5, 4 };
@@ -189,7 +191,7 @@ public class Utils {
 
                 isPixelVisited[newPixel] = true;
                 pixelDirections.set(newPixel, oppositeNeighborhood[neighbor]); // Neighbor in opposite
-                                                                               // directio
+                                                                               // direction
 
                 Utils.addNewEdge(newPixel, edgeQueue, neighborhood, rgbDistance, isPixelVisited);
                 worstEdges.put(newPixel, distance);
@@ -199,51 +201,117 @@ public class Utils {
         return pixelDirections;
     }
 
-    public static BufferedImage[] createImage(BufferedImage image, ArrayList<Individual> population,
+    public static boolean[] filterResults(ArrayList<Individual> population,
             DisjointUnionSet[] disjointSet,
             ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMap, ArrayList<Map<Integer, double[]>> paretoFronts,
-            int[][] neighborhood) {
+            int[][] neighborhood, int floor, int roof) {
 
         int N = paretoFronts.get(0).size();
-        BufferedImage[] bufferedImages = new BufferedImage[N];
+        boolean[] isFeasible = new boolean[population.size()];
+        Iterator<Integer> iterator = paretoFronts.get(0).keySet().iterator();
+
+        for (int i = 0; i < N; i++) {
+            Integer individualIndex = iterator.next();
+            HashMap<Integer, ArrayList<Integer>> segments = segmentMap.get(individualIndex);
+            if (floor <= segments.keySet().size() && segments.keySet().size() <= roof) {
+                isFeasible[individualIndex] = true;
+            } else {
+                isFeasible[individualIndex] = false;
+            }
+        }
+        return isFeasible;
+
+    }
+
+    public static ArrayList<BufferedImage> createImage(BufferedImage image, ArrayList<Individual> population,
+            DisjointUnionSet[] disjointSet,
+            ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMap, ArrayList<Map<Integer, double[]>> paretoFronts,
+            int[][] neighborhood, boolean[] isFeasible) {
+
+        int N = paretoFronts.get(0).size();
+        ArrayList<BufferedImage> bufferedImages = new ArrayList<BufferedImage>(N);
         Iterator<Integer> iterator = paretoFronts.get(0).keySet().iterator();
 
         for (int i = 0; i < N; i++) {
             BufferedImage type2 = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
             Integer individualIndex = iterator.next();
-            Individual individual = population.get(individualIndex);
+            if (isFeasible[individualIndex]) {
+                // Document stats
+                double[] paretoStats = paretoFronts.get(0).get(individualIndex);
+                //System.out.println("\n\nIndividual " + individualIndex + " Stats:");
+                //System.out.print("Segments: " + segmentMap.get(individualIndex).size());
+                //System.out.println(", Edge score: " + paretoStats[0] + ", Connectivity score: " + paretoStats[1] + ", Deviation score: " + paretoStats[2]);
 
-            // Initialize the entire type 2 image as white
-            Graphics2D graphics = type2.createGraphics();
-            graphics.setPaint(new Color(255, 255, 255));
-            graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
-            graphics.dispose();
+                Individual individual = population.get(individualIndex);
 
-            for (int pixelIndex = 0; pixelIndex < image.getWidth() * image.getHeight(); pixelIndex++) {
-                for (int neighboor = 0; neighboor < 8; neighboor++) {
-                    if (neighborhood[pixelIndex][neighboor] == -1 // Edge pixel
-                            || individual.segmentIds[pixelIndex] != individual.segmentIds[neighborhood[pixelIndex][neighboor]]) {// Segment
-                                                                                                                                 // edge
-                                                                                                                                 // pixel
-                        int[] coordinates = Utils.pixelIndexToCoordinate(image, pixelIndex);
-                        type2.setRGB(coordinates[0], coordinates[1], new Color(0, 0, 0).getRGB());
+                // Initialize the entire type 2 image as white
+                Graphics2D graphics = type2.createGraphics();
+                graphics.setPaint(new Color(255, 255, 255));
+                graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+                graphics.dispose();
+
+                for (int pixelIndex = 0; pixelIndex < image.getWidth() * image.getHeight(); pixelIndex++) {
+                    for (int neighboor = 0; neighboor < 8; neighboor++) {
+                        if (neighborhood[pixelIndex][neighboor] == -1 // Edge pixel
+                                || individual.segmentIds[pixelIndex] != individual.segmentIds[neighborhood[pixelIndex][neighboor]]) {// Segment
+                                                                                                                                     // edge
+                                                                                                                                     // pixel
+                            int[] coordinates = Utils.pixelIndexToCoordinate(image, pixelIndex);
+                            type2.setRGB(coordinates[0], coordinates[1], new Color(0, 0, 0).getRGB());
+                        }
                     }
                 }
+                bufferedImages.add(type2);
             }
-            bufferedImages[i] = type2;
         }
         return bufferedImages;
     }
 
-    public static void saveImage(BufferedImage[] bufferedImages) {
-        for (int i = 0; i < bufferedImages.length; i++) {
+    public static void saveImage(ArrayList<BufferedImage> bufferedImages) {
+        for (int i = 0; i < bufferedImages.size(); i++) {
             try {
                 File outputFile = new File("./src/evaluator/Student_Segmentation_Files/image" + i + ".png");
                 outputFile.getParentFile().mkdirs();
-                ImageIO.write(bufferedImages[i], "png", outputFile);
+                ImageIO.write(bufferedImages.get(i), "png", outputFile);
             } catch (IOException e) {
                 System.err.println(e);
             }
         }
+    }
+
+    public static ArrayList<Double> earlyStopping(){
+        String s = null;
+        File f = new File("src");
+
+        ArrayList<Double> scores = new ArrayList<Double>();
+
+        try {
+                Process p = Runtime.getRuntime().exec("python3 " + f.getAbsolutePath() + "/evaluator/run.py");
+
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+                BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+                // read the output from the command
+                int i = 0;
+                while ((s = stdInput.readLine()) != null) {
+                    s = s.replaceAll("[^-?0-9.]+", " "); 
+                    scores.add(Double.parseDouble(Arrays.asList(s.trim().split(" ")).get(0)));
+                    i ++;
+                }
+
+                // read any errors from the attempted command
+                while ((s = stdError.readLine()) != null) {
+                        System.out.println(s);
+                }
+
+                // System.exit(0);
+        } catch (IOException e) {
+                System.out.println("exception happened - here's what I know: ");
+                e.printStackTrace();
+                System.exit(-1);
+        }
+
+        return scores;
     }
 }

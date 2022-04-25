@@ -88,7 +88,7 @@ public class Fitness {
         return paretoFronts;
     }
 
-    // Maximize this
+    // Maximize this * -1 => Minimize this 
     public static double[] calculateEdgeValue(ArrayList<Individual> population, BufferedImage image,
             int[][] neighborhood, double[][] rgbDistance) {
         double[] edgeValues = new double[population.size()];
