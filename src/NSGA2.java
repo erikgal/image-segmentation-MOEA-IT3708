@@ -17,15 +17,15 @@ class NSGA2 {
         public static void main(String[] args) {
                 // Hyper-parameters
                 int epochs = 300;
-                int imageIndex = 0;
+                int imageIndex = 1;
                 int populationSize = 30;
                 double pC = 0.1;
                 double pM = 0.0007;
-                int minSegments = 4;
-                int maxSegments = 41;
+                int minSegments = 12;
+                int maxSegments = 47;
                 boolean checkEarlyStopping = true;
                 int earlyStopRound = 4;
-                double threshold = 75.00;
+                double threshold = 80.00;
 
                 BufferedImage[] images = Utils.loadImages();
                 BufferedImage image = images[imageIndex];
@@ -35,10 +35,10 @@ class NSGA2 {
                 ArrayList<Individual> population = Population.generateMSTPopulation(image, populationSize, neighborhood,
                                 rgbDistance);
 
-                for (int epoch = 0; epoch < epochs; epoch++) {
+                for (int epoch = 1; epoch < epochs; epoch++) {
 
                         // Calculate information about new population
-                        System.out.println("Epoch: " + (epoch+1));
+                        System.out.println("Epoch: " + epoch);
                         DisjointUnionSet[] disjointSet = Utils.fillDisjointUnionSet(population, image, neighborhood);
                         ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps = Utils.getSegementMaps(disjointSet,
                                         image.getWidth() * image.getHeight(), population);
@@ -56,15 +56,19 @@ class NSGA2 {
 
                                 ArrayList<Double> scores = Utils.earlyStopping();
                                 double max = Double.MIN_VALUE;
+                                int winning_index = -1;
                                 for (int i = 0; i < scores.size(); i++) {
-                                        max = Math.max(max, scores.get(i));
-                                        if(scores.get(i) >= threshold){
-                                                System.out.println("Found solution with " + scores.get(i) + "%");
-                                                ArrayList<BufferedImage> bestImage = new ArrayList<BufferedImage>();
-                                                bestImage.add(outputImages.get(i));
-                                                Utils.saveImage(bestImage, new Boolean(false));
-                                                System.exit(0);
+                                        if(scores.get(i) >= max){
+                                                winning_index = i;
+                                                max = scores.get(i);
                                         }
+                                }
+                                if(winning_index != -1 && scores.get(winning_index) >= threshold){
+                                        System.out.println("Found solution with " + scores.get(winning_index) + "%");
+                                        ArrayList<BufferedImage> bestImage = new ArrayList<BufferedImage>();
+                                        bestImage.add(outputImages.get(winning_index));
+                                        Utils.saveImage(bestImage, new Boolean(false));
+                                        System.exit(0);
                                 }
                                 System.out.println("Best Score this generation: " + max);
                         }
