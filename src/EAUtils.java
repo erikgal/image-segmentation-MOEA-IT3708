@@ -29,6 +29,23 @@ public class EAUtils {
         return parents;
     }
 
+    public static ArrayList<Individual> tournamentSelectionSGA(ArrayList<Individual> population,
+            ArrayList<Double> fitness) {
+        ArrayList<Individual> parents = new ArrayList<Individual>(population.size());
+
+        for (int i = 0; i < ((int) population.size() / 2) * 2; i++) {
+            int cand1Index = (int) (Math.random() * population.size());
+            int cand2Index = (int) (Math.random() * population.size());
+            Individual candidate1 = population.get(cand1Index);
+            Individual candidate2 = population.get(cand2Index);
+            Individual winner = fitness.get(cand1Index) < fitness.get(cand2Index) ? candidate1 : candidate2;
+
+            parents.add(winner);
+        }
+
+        return parents;
+    }
+
     public static ArrayList<Individual> survivorSelection(int N, ArrayList<Individual> population,
             ArrayList<Map<Integer, double[]>> paretoFronts, HashMap<Integer, Double> crowdingDistances) {
 
@@ -49,15 +66,14 @@ public class EAUtils {
                 }
 
                 // put data from sorted list to hashmap
-                HashMap<Integer, Double> sortedFront = ValueComparator.sortMap(subCrowdingDistances);
+                HashMap<Integer, Double> sortedFront = ValueComparator.sortMap(subCrowdingDistances, -1);
 
                 int i = 0;
                 for (Integer key : sortedFront.keySet()) {
-                    if(i < remainingCapacity){
+                    if (i < remainingCapacity) {
                         survivors.add(population.get(key));
                         i++;
-                    }
-                    else{
+                    } else {
                         break;
                     }
                 }
@@ -65,6 +81,25 @@ public class EAUtils {
             }
         }
 
+        return survivors;
+    }
+
+    public static ArrayList<Individual> survivorSelectionSGA(int N, ArrayList<Individual> population,
+            ArrayList<Double> weightedFitness) {
+
+        ArrayList<Individual> survivors = new ArrayList<Individual>(N);
+
+        // Get crowding distances for desired front, and sort them
+        HashMap<Integer, Double> fitnesMap = new HashMap<Integer, Double>();
+        for (int i = 0; i < population.size(); i++) {
+            fitnesMap.put(i, weightedFitness.get(i));
+        }
+
+        HashMap<Integer, Double> sortedFitness = ValueComparator.sortMap(fitnesMap, 1);
+        Iterator iterator = sortedFitness.keySet().iterator();
+        for (int i = 0; i < N; i++) {
+            survivors.add(population.get((int) iterator.next()));
+        }
         return survivors;
     }
 

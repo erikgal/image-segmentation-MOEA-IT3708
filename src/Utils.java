@@ -233,18 +233,17 @@ public class Utils {
         Iterator<Integer> iterator = paretoFronts.get(0).keySet().iterator();
 
         for (int i = 0; i < N; i++) {
+            BufferedImage type1 = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
             BufferedImage type2 = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
             Integer individualIndex = iterator.next();
             if (isFeasible[individualIndex]) {
-                // Document stats
-                double[] paretoStats = paretoFronts.get(0).get(individualIndex);
-                //System.out.println("\n\nIndividual " + individualIndex + " Stats:");
-                //System.out.print("Segments: " + segmentMap.get(individualIndex).size());
-                //System.out.println(", Edge score: " + paretoStats[0] + ", Connectivity score: " + paretoStats[1] + ", Deviation score: " + paretoStats[2]);
 
                 Individual individual = population.get(individualIndex);
 
-                // Initialize the entire type 2 image as white
+                Graphics2D graphics1 = (Graphics2D) type1.getGraphics();
+                graphics1.drawImage(image, 0, 0, null);
+                graphics1.dispose();
+
                 Graphics2D graphics = type2.createGraphics();
                 graphics.setPaint(new Color(255, 255, 255));
                 graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
@@ -257,13 +256,57 @@ public class Utils {
                                                                                                                                      // edge
                                                                                                                                      // pixel
                             int[] coordinates = Utils.pixelIndexToCoordinate(image, pixelIndex);
+                            type1.setRGB(coordinates[0], coordinates[1], new Color(0, 255, 0).getRGB());
                             type2.setRGB(coordinates[0], coordinates[1], new Color(0, 0, 0).getRGB());
                         }
                     }
                 }
+                bufferedImages.add(type1);
                 bufferedImages.add(type2);
             }
         }
+        return bufferedImages;
+    }
+
+    public static ArrayList<BufferedImage> createImageSGA(BufferedImage image, ArrayList<Individual> population,
+            DisjointUnionSet[] disjointSet,
+            ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMap,
+            int[][] neighborhood) {
+        ArrayList<BufferedImage> bufferedImages = new ArrayList<BufferedImage>(population.size());
+
+        for (int i = 0; i < population.size(); i++) {
+            BufferedImage type1 = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+            BufferedImage type2 = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+            Individual individual = population.get(i);
+
+            Graphics2D graphics1 = (Graphics2D) type1.getGraphics();
+            graphics1.drawImage(image, 0, 0, null);
+            graphics1.dispose();
+
+            Graphics2D graphics2 = type2.createGraphics();
+            graphics2.setPaint(new Color(255, 255, 255));
+            graphics2.fillRect(0, 0, image.getWidth(), image.getHeight());
+            graphics2.dispose();
+
+            for (int pixelIndex = 0; pixelIndex < image.getWidth() * image.getHeight(); pixelIndex++) {
+                for (int neighboor = 0; neighboor < 8; neighboor++) {
+                    if (neighborhood[pixelIndex][neighboor] == -1 // Edge pixel
+                            || individual.segmentIds[pixelIndex] != individual.segmentIds[neighborhood[pixelIndex][neighboor]]) {// Segment
+                                                                                                                                 // edge
+                                                                                                                                 // pixel
+                        int[] coordinates = Utils.pixelIndexToCoordinate(image, pixelIndex);
+
+                        type1.setRGB(coordinates[0], coordinates[1], new Color(0, 255, 0).getRGB());
+                        type2.setRGB(coordinates[0], coordinates[1], new Color(0, 0, 0).getRGB());
+                    }
+                }
+            }
+            bufferedImages.add(type1);
+            bufferedImages.add(type2);
+
+        }
+
         return bufferedImages;
     }
 
@@ -271,9 +314,11 @@ public class Utils {
         for (int i = 0; i < bufferedImages.size(); i++) {
             try {
                 File outputFile;
-                if (earlyStopping){
+                if (i % 2 == 0) {
+                    outputFile = new File("./src/images/Type1/image" + (i+1) + ".png");
+                } else if (earlyStopping) {
                     outputFile = new File("./src/images/Student_Segmentation_Files/image" + i + ".png");
-                }else{
+                } else {
                     outputFile = new File("./src/evaluator/Student_Segmentation_Files/image" + i + ".png");
                 }
                 outputFile.getParentFile().mkdirs();
@@ -284,37 +329,37 @@ public class Utils {
         }
     }
 
-    public static ArrayList<Double> earlyStopping(){
+    public static ArrayList<Double> earlyStopping() {
         String s = null;
         File f = new File("src");
 
         ArrayList<Double> scores = new ArrayList<Double>();
 
         try {
-                Process p = Runtime.getRuntime().exec("python3 " + f.getAbsolutePath() + "/evaluator/run.py earlyStopping");
+            Process p = Runtime.getRuntime().exec("python3 " + f.getAbsolutePath() + "/evaluator/run.py earlyStopping");
 
-                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-                BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-                // read the output from the command
-                int i = 0;
-                while ((s = stdInput.readLine()) != null) {
-                    s = s.replaceAll("[^-?0-9.]+", " "); 
-                    scores.add(Double.parseDouble(Arrays.asList(s.trim().split(" ")).get(0)));
-                    i ++;
-                }
+            // read the output from the command
+            int i = 0;
+            while ((s = stdInput.readLine()) != null) {
+                s = s.replaceAll("[^-?0-9.]+", " ");
+                scores.add(Double.parseDouble(Arrays.asList(s.trim().split(" ")).get(0)));
+                i++;
+            }
 
-                // read any errors from the attempted command
-                while ((s = stdError.readLine()) != null) {
-                        System.out.println(s);
-                }
+            // read any errors from the attempted command
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
 
-                // System.exit(0);
+            // System.exit(0);
         } catch (IOException e) {
-                System.out.println("exception happened - here's what I know: ");
-                e.printStackTrace();
-                System.exit(-1);
+            System.out.println("exception happened - here's what I know: ");
+            e.printStackTrace();
+            System.exit(-1);
         }
 
         return scores;

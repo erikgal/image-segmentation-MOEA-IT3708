@@ -37,7 +37,7 @@ public class Population {
             int[][] neighborhood, double[][] rgbDistance) {
         ArrayList<Individual> population = new ArrayList<Individual>(populationSize);
         
-        int M = 2; // Number segmentations
+        int M = 5; // Number segmentations
         int N = 2000; // Choose M random segmentations for N
         for (int i = 0; i < populationSize; i++) {
             int startPixel = (int) (Math.random() * (image.getWidth() * image.getHeight()));

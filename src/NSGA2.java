@@ -17,15 +17,15 @@ class NSGA2 {
         public static void main(String[] args) {
                 // Hyper-parameters
                 int epochs = 300;
-                int imageIndex = 1;
-                int populationSize = 30;
+                int imageIndex = 3;
+                int populationSize = 10;
                 double pC = 0.1;
                 double pM = 0.0007;
                 int minSegments = 12;
                 int maxSegments = 47;
                 boolean checkEarlyStopping = true;
-                int earlyStopRound = 4;
-                double threshold = 80.00;
+                int earlyStopRound = 2;
+                double threshold = 75.00;
 
                 BufferedImage[] images = Utils.loadImages();
                 BufferedImage image = images[imageIndex];
@@ -66,7 +66,9 @@ class NSGA2 {
                                 if(winning_index != -1 && scores.get(winning_index) >= threshold){
                                         System.out.println("Found solution with " + scores.get(winning_index) + "%");
                                         ArrayList<BufferedImage> bestImage = new ArrayList<BufferedImage>();
-                                        bestImage.add(outputImages.get(winning_index));
+                                        int index = winning_index * 2;
+                                        bestImage.add(outputImages.get(index));
+                                        bestImage.add(outputImages.get(index+1));
                                         Utils.saveImage(bestImage, new Boolean(false));
                                         System.exit(0);
                                 }

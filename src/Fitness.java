@@ -9,25 +9,27 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-
 public class Fitness {
 
-    public static HashMap<Integer, Double> calculateCrowdingDistance(ArrayList<Map<Integer, double[]>> paretoFronts){
+    public static HashMap<Integer, Double> calculateCrowdingDistance(ArrayList<Map<Integer, double[]>> paretoFronts) {
         HashMap<Integer, Double> crowdingDistance = new HashMap<Integer, Double>();
         for (int front = 0; front < paretoFronts.size(); front++) {
             for (int M = 0; M < 3; M++) {
                 HashMap<Integer, double[]> paretoFront = (HashMap<Integer, double[]>) paretoFronts.get(front);
-                // TreeMap<Integer, double[]> sortedFront = new TreeMap<Integer, double[]>(new ObjectiveComparator(paretoFront, "Descending", M));
+                // TreeMap<Integer, double[]> sortedFront = new TreeMap<Integer, double[]>(new
+                // ObjectiveComparator(paretoFront, "Descending", M));
                 // sortedFront.putAll(paretoFront);
                 LinkedHashMap<Integer, double[]> sortedFront = ParetoComparator.sortMap(paretoFront, "Descending", M);
 
                 Iterator<Entry<Integer, double[]>> iterator = sortedFront.entrySet().iterator();
                 Integer firstKey = iterator.next().getKey();
                 Integer lastKey = firstKey;
-                while (iterator.hasNext()) { lastKey = iterator.next().getKey(); }
+                while (iterator.hasNext()) {
+                    lastKey = iterator.next().getKey();
+                }
 
                 crowdingDistance.put(firstKey, Double.MAX_VALUE); // TODO Double check this!
-                crowdingDistance.put(lastKey, Double.MAX_VALUE);  // TODO Double check this!
+                crowdingDistance.put(lastKey, Double.MAX_VALUE); // TODO Double check this!
                 double fMax = sortedFront.get(firstKey)[M];
                 double fMin = sortedFront.get(lastKey)[M];
 
@@ -35,19 +37,18 @@ public class Fitness {
                 Integer prevKey = keyIterator.next();
                 Integer key = -1;
                 int i = 0;
-                while(keyIterator.hasNext()){
+                while (keyIterator.hasNext()) {
                     key = i == 0 ? keyIterator.next() : key; // Only first key
-                    if(keyIterator.hasNext()){
+                    if (keyIterator.hasNext()) {
                         Integer nextKey = keyIterator.next();
                         double d = M == 0 ? 0 : crowdingDistance.get(key);
                         d += (sortedFront.get(prevKey)[M] - sortedFront.get(nextKey)[M]) / (fMax - fMin);
-                        //d = crowdingDistance.get(key) != Double.MAX_VALUE ? d :  Double.MAX_VALUE;
+                        // d = crowdingDistance.get(key) != Double.MAX_VALUE ? d : Double.MAX_VALUE;
                         crowdingDistance.put(key, d);
                         prevKey = key;
                         key = nextKey;
                         i++;
-                    }
-                    else{
+                    } else {
                         break;
                     }
                 }
@@ -56,7 +57,8 @@ public class Fitness {
         return crowdingDistance;
     }
 
-    public static ArrayList<Map<Integer, double[]>> calculateFitness(ArrayList<Individual> population, BufferedImage image,
+    public static ArrayList<Map<Integer, double[]>> calculateFitness(ArrayList<Individual> population,
+            BufferedImage image,
             int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps) {
         double[] edgeValues = calculateEdgeValue(population, image, neighborhood, rgbDistance);
         double[] connectivityValues = calculateConnectivity(population, image, neighborhood, rgbDistance);
@@ -66,11 +68,11 @@ public class Fitness {
         double minValue = Double.MAX_VALUE;
         for (int i = 0; i < edgeValues.length; i++) {
             valuesMap.put(i, new double[] { edgeValues[i], connectivityValues[i], deviationValues[i] });
-            minValue = Math.min(minValue, edgeValues[i] + connectivityValues[i] +  deviationValues[i]);
+            minValue = Math.min(minValue, edgeValues[i] + connectivityValues[i] + deviationValues[i]);
         }
-        //System.out.println("Minimum sum value: " + minValue);
+        // System.out.println("Minimum sum value: " + minValue);
 
-        LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap,  "Ascending", 2);
+        LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap, "Ascending", 2);
 
         Map<Integer, double[]> paretoFront = new HashMap<Integer, double[]>();
         ArrayList<Map<Integer, double[]>> paretoFronts = new ArrayList<Map<Integer, double[]>>();
@@ -83,12 +85,31 @@ public class Fitness {
                 population.get(key).paretoFront = front;
                 sortedMap.remove(key);
             }
-            front ++;
+            front++;
         }
         return paretoFronts;
     }
 
-    // Maximize this * -1 => Minimize this 
+    public static ArrayList<Double> calculateWeightedFitness(ArrayList<Individual> population,
+            BufferedImage image,
+            int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps,
+            double edgeWeight, double connectivityWeight, double deviationWeight) {
+        double[] edgeValues = calculateEdgeValue(population, image, neighborhood, rgbDistance);
+        double[] connectivityValues = calculateConnectivity(population, image, neighborhood, rgbDistance);
+        double[] deviationValues = calculateOverallDeviation(population, image, neighborhood, segmentMaps);
+
+        ArrayList<Double> fitness = new ArrayList<Double>(edgeValues.length);
+        
+        for (int i = 0; i < edgeValues.length; i++) {
+            double weightedFitness = edgeValues[i] * edgeWeight + connectivityValues[i] * connectivityWeight + deviationValues[i] * deviationWeight;
+            fitness.add(weightedFitness);
+        }
+        System.out.println("Fitness: " + fitness.get(0));
+
+        return fitness;
+    }
+
+    // Maximize this * -1 => Minimize this
     public static double[] calculateEdgeValue(ArrayList<Individual> population, BufferedImage image,
             int[][] neighborhood, double[][] rgbDistance) {
         double[] edgeValues = new double[population.size()];
