@@ -49,7 +49,7 @@ class SGA {
                                         image.getWidth() * image.getHeight(), population);
                         ArrayList<Double> weightedFitness = Fitness.calculateWeightedFitness(population, image,
                                         neighborhood,
-                                        rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight);
+                                        rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight, false);
 
                         // Find Parents and offspring (P & Q)
                         ArrayList<Individual> parents = EAUtils.tournamentSelectionSGA(population, weightedFitness);
@@ -62,7 +62,7 @@ class SGA {
                                         population);
                         weightedFitness = Fitness.calculateWeightedFitness(population, image,
                                         neighborhood,
-                                        rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight);
+                                        rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight, false);
 
                         // Finally, select survivors based on weighted fitness
                         population = EAUtils.survivorSelectionSGA(populationSize, population, weightedFitness);
@@ -73,7 +73,7 @@ class SGA {
                                 image.getWidth() * image.getHeight(), population);
                 ArrayList<Double> weightedFitness = Fitness.calculateWeightedFitness(population, image,
                                 neighborhood,
-                                rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight);
+                                rgbDistance, segmentMaps, edgeWeight, connectivityWeight, deviationWeight, true);
 
                 population = EAUtils.survivorSelectionSGA(nbrOutput, population, weightedFitness);
                 disjointSet = Utils.fillDisjointUnionSet(population, image, neighborhood);

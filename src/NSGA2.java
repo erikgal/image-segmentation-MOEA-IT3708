@@ -44,7 +44,7 @@ class NSGA2 {
                                         image.getWidth() * image.getHeight(), population);
                         ArrayList<Map<Integer, double[]>> paretoFronts = Fitness.calculateFitness(population, image,
                                         neighborhood,
-                                        rgbDistance, segmentMaps);
+                                        rgbDistance, segmentMaps, false);
                         HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
                         if (checkEarlyStopping && epoch % earlyStopRound == 0) {
@@ -69,6 +69,9 @@ class NSGA2 {
                                         int index = winning_index * 2;
                                         bestImage.add(outputImages.get(index));
                                         bestImage.add(outputImages.get(index+1));
+                                        Utils.printScore(winning_index, population, image,
+                                        neighborhood,
+                                        rgbDistance, segmentMaps, isFeasible, paretoFronts);
                                         Utils.saveImage(bestImage, new Boolean(false));
                                         System.exit(0);
                                 }
@@ -86,7 +89,7 @@ class NSGA2 {
                         segmentMaps = Utils.getSegementMaps(disjointSet, image.getWidth() * image.getHeight(),
                                         population);
                         paretoFronts = Fitness.calculateFitness(population, image, neighborhood, rgbDistance,
-                                        segmentMaps);
+                                        segmentMaps, false);
                         crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
                         // Finally, select survivors based on pareto front and crowding distance
@@ -99,7 +102,7 @@ class NSGA2 {
                                 image.getWidth() * image.getHeight(), population);
                 ArrayList<Map<Integer, double[]>> paretoFronts = Fitness.calculateFitness(population, image,
                                 neighborhood,
-                                rgbDistance, segmentMaps);
+                                rgbDistance, segmentMaps, true);
                 HashMap<Integer, Double> crowdingDistances = Fitness.calculateCrowdingDistance(paretoFronts);
 
                 boolean[] isFeasible = Utils.filterResults(population, disjointSet, segmentMaps, paretoFronts,

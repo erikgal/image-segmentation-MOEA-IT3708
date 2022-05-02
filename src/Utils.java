@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Paint;
 
 import javax.imageio.ImageIO;
+import javax.print.event.PrintJobListener;
 
 public class Utils {
     public static enum PixelDirection {
@@ -363,5 +364,23 @@ public class Utils {
         }
 
         return scores;
+    }
+
+    public static void printScore(int index, ArrayList<Individual> population,
+    BufferedImage image,
+    int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps,  boolean[] isFeasible, ArrayList<Map<Integer, double[]>> paretoFronts){
+        
+        int counter = 0;
+        for (int i = 0; i < isFeasible.length; i++) {
+            if (isFeasible[i]){
+                counter ++;
+            }   
+            if (counter == index){
+                Map<Integer, double[]> front = paretoFronts.get(0);
+                double[] fitness  = front.get(counter);
+                System.out.println("Edge: " + fitness[0] + ", Connectivity: " + fitness[1] + ", Deviation: " + fitness[2]);
+                break;
+            }
+        }
     }
 }

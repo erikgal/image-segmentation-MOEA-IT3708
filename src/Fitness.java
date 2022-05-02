@@ -59,7 +59,7 @@ public class Fitness {
 
     public static ArrayList<Map<Integer, double[]>> calculateFitness(ArrayList<Individual> population,
             BufferedImage image,
-            int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps) {
+            int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps, boolean print) {
         double[] edgeValues = calculateEdgeValue(population, image, neighborhood, rgbDistance);
         double[] connectivityValues = calculateConnectivity(population, image, neighborhood, rgbDistance);
         double[] deviationValues = calculateOverallDeviation(population, image, neighborhood, segmentMaps);
@@ -70,8 +70,7 @@ public class Fitness {
             valuesMap.put(i, new double[] { edgeValues[i], connectivityValues[i], deviationValues[i] });
             minValue = Math.min(minValue, edgeValues[i] + connectivityValues[i] + deviationValues[i]);
         }
-        // System.out.println("Minimum sum value: " + minValue);
-
+        
         LinkedHashMap<Integer, double[]> sortedMap = ParetoComparator.sortMap(valuesMap, "Ascending", 2);
 
         Map<Integer, double[]> paretoFront = new HashMap<Integer, double[]>();
@@ -87,13 +86,21 @@ public class Fitness {
             }
             front++;
         }
+        if(print){
+            Map<Integer, double[]> front0 = paretoFronts.get(0);
+            Iterator keys = front0.keySet().iterator();
+            while(keys.hasNext()){
+                double[] lst = front0.get(keys.next());
+                System.out.println("Edge: " + lst[0] + ", Connectivity: " + lst[1] + ", Deviation: " + lst[2]);
+            }
+        }
         return paretoFronts;
     }
 
     public static ArrayList<Double> calculateWeightedFitness(ArrayList<Individual> population,
             BufferedImage image,
             int[][] neighborhood, double[][] rgbDistance, ArrayList<HashMap<Integer, ArrayList<Integer>>> segmentMaps,
-            double edgeWeight, double connectivityWeight, double deviationWeight) {
+            double edgeWeight, double connectivityWeight, double deviationWeight, boolean print) {
         double[] edgeValues = calculateEdgeValue(population, image, neighborhood, rgbDistance);
         double[] connectivityValues = calculateConnectivity(population, image, neighborhood, rgbDistance);
         double[] deviationValues = calculateOverallDeviation(population, image, neighborhood, segmentMaps);
@@ -101,6 +108,9 @@ public class Fitness {
         ArrayList<Double> fitness = new ArrayList<Double>(edgeValues.length);
         
         for (int i = 0; i < edgeValues.length; i++) {
+            if (print){
+                System.out.println("Edge: " + edgeValues[i] + ", Connectivity: " + connectivityValues[i] + ", Deviation: " + deviationValues[i]);
+            }
             double weightedFitness = edgeValues[i] * edgeWeight + connectivityValues[i] * connectivityWeight + deviationValues[i] * deviationWeight;
             fitness.add(weightedFitness);
         }

@@ -89,7 +89,6 @@ public class EAUtils {
 
         ArrayList<Individual> survivors = new ArrayList<Individual>(N);
 
-        // Get crowding distances for desired front, and sort them
         HashMap<Integer, Double> fitnesMap = new HashMap<Integer, Double>();
         for (int i = 0; i < population.size(); i++) {
             fitnesMap.put(i, weightedFitness.get(i));
